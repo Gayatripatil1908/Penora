@@ -7,14 +7,21 @@ const postBlogs = async(req, res) => {
         return res.status(400).json({ success : false, message: "Missing required fields" });
 }
 
+
+
 const newBlog = new Blog({
     title,
     content,
     author,
     category,
-    image
+    image,
+    slug: `temp-slug-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 });
+
 const savedBlog = await newBlog.save();
+savedBlog.slug = `${title.toLowerCase().replace(/ /g, '-')}-${savedBlog._id}`.replace(/[^\w-]+/g, '');
+await savedBlog.save();
+
 res.status(201).json({ success: true, message : "Blog created successfully", blog: savedBlog });
 };
 
