@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 export default function HomePage() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   // Fetch blogs from backend API
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const res = await fetch("/api/blogs"); // Replace with your backend URL if needed
+        const res = await axiox.get(`${import.meta.env.VITE_API_URL}/blogs`); // Replace with your backend URL if needed
         const data = await res.json();
         setBlogs(data);
         setLoading(false);
