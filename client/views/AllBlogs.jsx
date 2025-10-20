@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import Navbar from "../components/Navbar.jsx";
 
 export default function HomePage() {
   const [blogs, setBlogs] = useState([]);
@@ -25,14 +26,16 @@ export default function HomePage() {
   }, []);
 
   return (
+    
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-10 px-6">
+      <Navbar user={user} setUser={setUser} />
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="text-4xl md:text-5xl font-extrabold text-center text-gray-800 mb-10"
+          className="text-4xl md:text-5xl font-extrabold text-center text-gray-800 mb-10 mt-10"
         >
           Welcome to <span className="text-purple-600">Penora</span> 🖋️
         </motion.h1>
