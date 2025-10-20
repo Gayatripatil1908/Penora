@@ -25,4 +25,9 @@ await savedBlog.save();
 res.status(201).json({ success: true, message : "Blog created successfully", blog: savedBlog });
 };
 
-export { postBlogs };
+const getBlogs = async (req, res) => {
+    const blogs =  await Blog.find().populate('author', '_id name email').sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: blogs, message: "All blogs fetched successfully" }); 
+};
+
+export { postBlogs, postBlogs, };
