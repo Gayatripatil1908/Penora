@@ -13,8 +13,11 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async() => {
-    const response =axios.post('http://localhost:8080/login',formData)
-    console.log("Login Data:", formData)
+    const response =axios.post(`${import.meta.env.VITE_API_URL}/login`,formData);
+    if(response?.data?.success){
+      localStorage.setItem("user", JSON.stringify( response.data.user));
+      window.location.href = "/";
+    }
     
   };
 

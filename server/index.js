@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import { postLogin, postSignup } from "./controllers/user.js";
+import { postBlog } from "./controllers/blog.js";
 
 dotenv.config();
 
@@ -42,6 +43,8 @@ app.get("/", (req, res) => {
 app.post("/signup", postSignup);
 
 app.post("/login", postLogin);
+
+app.post("/blogs", postBlog);
 
 const checkHeaderKey = (req, res, next) => {
     const {api_token} = req.headers;

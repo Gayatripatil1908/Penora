@@ -1,4 +1,5 @@
 import User from "./../models/User.js";
+import md5 from "md5";
 
 const postSignup = async(req, res) => {
     const {name, email, password} = req.body;
@@ -26,7 +27,7 @@ const postSignup = async(req, res) => {
 
 
 
-    const newUser = new User({name, email, password});
+    const newUser = new User({name, email, password: md5(password) });
     const savedUser = await newUser.save();
     res.json({sucess: true, message: "User registered successfully", user: savedUser});
 };
@@ -36,9 +37,9 @@ const postLogin = async(req, res) => {
     if (!email || !password) {
         return res.status(400).json({ success: false, message: "Email and password are required" });
     }
-}
+};
 
-    const existingUser = await User.findOne({ email, password });
+const existingUser = await User.findOne({ email, password: md5(password)}.select("-password"));
     if (!existingUser) {
         return res.json({ success: true, message: "User logged in successfully", user: existingUser });
     } else {
