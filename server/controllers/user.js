@@ -37,14 +37,15 @@ const postLogin = async(req, res) => {
     if (!email || !password) {
         return res.status(400).json({ success: false, message: "Email and password are required" });
     }
-};
+    // find user and exclude password from returned fields
+    const existingUser = await User.findOne({ email, password: md5(password) }).select("-password");
 
-const existingUser = await User.findOne({ email, password: md5(password)}.select("-password"));
     if (!existingUser) {
-        return res.json({ success: true, message: "User logged in successfully", user: existingUser });
-    } else {
         return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
+
+    return res.json({ success: true, message: "User logged in successfully", user: existingUser });
+};
 
 
 export { postSignup, postLogin };

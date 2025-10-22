@@ -30,4 +30,52 @@ const getBlogs = async (req, res) => {
     res.status(200).json({ success: true, data: blogs, message: "All blogs fetched successfully" }); 
 };
 
-export { postBlogs, postBlogs, };
+const getBlogsForSlug = async (req, res) => {
+    const { slug } = req.params;
+    const blog = await Blog.findOne({ slug }).populate('author', '_id name email');
+
+    
+
+
+    if (!blog) {
+        return res.status(404).json({ success: false, message: "Blog not found" });
+    }
+    res.status(200).json({ success: true, data: blog, message: "Blog fetched successfully" });
+}
+
+export { postBlogs, getBlogs, getBlogsForSlug };
+
+const getBlogById = async (req, res) => {
+    const { id } = req.params;
+    const blog = await Blog.findById(id).populate('author', '_id name email');
+    if (!blog) {
+        return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+    res.status(200).json({ success: true, data: blog, message: 'Blog fetched successfully' });
+};
+
+const updateBlogById = async (req, res) => {
+    const { id } = req.params;
+    const { title, content, category, image, userId } = req.body;
+
+    const blog = await Blog.findById(id);
+    if (!blog) {
+        return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+
+    // ownership check - ensure the requester is the author
+    if (!userId || blog.author.toString() !== userId) {
+        return res.status(403).json({ success: false, message: 'Forbidden: you are not the author of this blog' });
+    }
+
+    // update allowed fields
+    if (title) blog.title = title;
+    if (content) blog.content = content;
+    if (category) blog.category = category;
+    if (image !== undefined) blog.image = image;
+
+    await blog.save();
+    res.status(200).json({ success: true, message: 'Blog updated successfully', data: blog });
+};
+
+export { getBlogById, updateBlogById };

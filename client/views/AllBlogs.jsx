@@ -92,7 +92,7 @@ export default function HomePage() {
             <p className="text-center text-gray-600 text-lg">
               No blogs yet. Be the first to{" "}
               <Link
-                to="/new-blog"
+                to="/new"
                 className="text-purple-600 font-medium hover:underline"
               >
                 write one!

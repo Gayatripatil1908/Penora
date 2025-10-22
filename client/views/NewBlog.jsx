@@ -103,7 +103,8 @@ export default function NewBlogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 py-10 px-5 flex justify-center">
+  
+  <div className="min-h-screen bg-site py-10 px-5 flex justify-center">
       <Toaster position="top-right" toastOptions={{ duration: 2000 }} />
       <motion.div
         initial={{ opacity: 0, y: 40 }}
@@ -111,8 +112,8 @@ export default function NewBlogPage() {
         transition={{ duration: 0.8 }}
         className="w-full max-w-3xl bg-white/70 backdrop-blur-lg border border-white/30 shadow-xl rounded-2xl p-8"
       >
-        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-          ✍️ Write a New <span className="text-purple-600">Penora</span> Blog
+        <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+          ✍️ Write a New <span className="text-brand">Penora</span> Blog
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -128,7 +129,7 @@ export default function NewBlogPage() {
               value={blogData.title}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent focus:outline-none focus-ring-brand"
             />
           </div>
 
@@ -142,7 +143,7 @@ export default function NewBlogPage() {
               value={blogData.category}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent focus:outline-none focus-ring-brand"
             >
               <option value="">Select Category</option>
               <option value="Technology">Technology</option>
@@ -198,7 +199,7 @@ export default function NewBlogPage() {
               onChange={handleImageChange}
               className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 
                          file:rounded-lg file:border-0 file:text-sm file:font-semibold
-                         file:bg-purple-500 file:text-white hover:file:bg-purple-600"
+                         file:bg-accent file:text-white hover:file:bg-accent-dark"
             />
             {blogData.image && (
               <img
@@ -219,14 +220,14 @@ export default function NewBlogPage() {
                 <button
                   type="button"
                   onClick={() => setIsPreviewMode(!isPreviewMode)}
-                  className="text-sm text-purple-600 hover:text-purple-700"
+                  className="text-sm link-brand hover:text-accent"
                 >
                   {isPreviewMode ? '✏️ Edit' : '👁️ Preview'}
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveDraft}
-                  className="text-sm text-purple-600 hover:text-purple-700"
+                  className="text-sm link-brand hover:text-accent"
                 >
                   💾 Save Draft
                 </button>
@@ -250,7 +251,7 @@ export default function NewBlogPage() {
                 onChange={handleContentChange}
                 preview="edit"
                 height={300}
-                className="rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                className="rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent focus:outline-none focus-ring-brand"
               />
             )}
 
@@ -270,7 +271,7 @@ export default function NewBlogPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             type="submit"
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-lg font-semibold shadow-md hover:from-purple-600 hover:to-pink-600 transition-all"
+            className="w-full btn-brand shadow-md transition-all"
           >
             Publish Blog
           </motion.button>

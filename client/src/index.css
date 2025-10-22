@@ -1,3 +1,55 @@
 
 
 @import "tailwindcss";
+
+
+:root {
+	--c1: #3e1e68; /* deep purple */
+	--c2: #5d2f77; /* muted violet */
+	--c3: #e45a92; /* pink */
+	--c4: #ffacac; /* soft coral/pink */
+
+	--brand: var(--c1);
+	--accent: var(--c2);
+	--highlight: var(--c3);
+	--bg: var(--c4);
+}
+
+/* Semantic utility classes for the site theme */
+.text-brand { color: var(--brand); }
+.text-accent { color: var(--accent); }
+.bg-brand { background-color: var(--brand); color: #fff; }
+.bg-accent { background-color: var(--accent); color: #fff; }
+.bg-site { background-color: var(--bg); }
+
+.btn-brand {
+	background-color: var(--brand);
+	color: #fff;
+	padding: .5rem 1rem;
+	border-radius: .5rem;
+	font-weight: 600;
+	display: inline-block;
+	border: 0;
+}
+.btn-brand:hover { filter: brightness(0.92); }
+
+/* Focus ring to match brand */
+.focus-ring-brand:focus,
+.focus-ring-brand:focus-visible {
+	box-shadow: 0 0 0 4px rgba(155, 93, 224, 0.18);
+	outline: none;
+}
+
+/* File input button styling */
+input[type="file"]::file-selector-button {
+	background: var(--accent);
+	color: #fff;
+	border: 0;
+	padding: .45rem .75rem;
+	border-radius: .5rem;
+	cursor: pointer;
+}
+
+/* Link brand */
+.link-brand { color: var(--brand); text-decoration: none; }
+.link-brand:hover { color: var(--accent); }

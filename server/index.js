@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import { postLogin, postSignup } from "./controllers/user.js";
-import { postBlogs, getBlogs } from "./controllers/blog.js";
+import { postBlogs, getBlogs, getBlogsForSlug } from "./controllers/blog.js";
 
 dotenv.config();
 
@@ -14,14 +14,14 @@ app.use(express.json());
 let requestCount = 0;
 
 const connectDB = async () => {
-    try{
-        const conn = await (`mongoose.connect(process.env.MONGO_URI)`);
-        if(conn) {
+    try {
+        const conn = await mongoose.connect(process.env.MONGO_URI);
+        if (conn) {
             console.log("MongoDB connected");
-        } 
-    } catch (error) {
-            console.error("MongoBD connection error:", error);
         }
+    } catch (error) {
+        console.error("MongoDB connection error:", error);
+    }
 };
 
 app.get("/api/request-count", (req, res) => {
@@ -41,10 +41,10 @@ app.get("/", (req, res) => {
 });
 
 app.post("/signup", postSignup);
-
 app.post("/login", postLogin);
 app.get("/blogs", getBlogs);
-app.post("/blogs", postBlog);
+app.post("/blogs", postBlogs);
+app.get("/blogs/:slug", getBlogsForSlug);
 
 const checkHeaderKey = (req, res, next) => {
     const {api_token} = req.headers;
@@ -73,6 +73,12 @@ app.get("/api/test2", (req, res) => {
     console.log("Actual Controller Test2 called");
     res.json({message: "Test2 route reached"});
 });
+
+// new ID based routes for fetching/updating by id
+import { getBlogById, updateBlogById } from "./controllers/blog.js";
+
+app.get('/blogs/id/:id', getBlogById);
+app.put('/blogs/id/:id', updateBlogById);
 
 
 
