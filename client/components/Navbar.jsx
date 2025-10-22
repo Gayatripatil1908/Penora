@@ -54,11 +54,12 @@ const Navbar = () => {
             >
               Write Blog
             </Link>
-            <Link to="/about" onClick={toggleMenu} className="link-brand hover:text-accent">
-              About
-            </Link>
+            
             <Link to="/login" onClick={toggleMenu} className="btn-brand">
               Login
+            </Link>
+            <Link to="/signup" onClick={toggleMenu} className="btn-brand">
+              Signup
             </Link>
           </div>
         </div>
