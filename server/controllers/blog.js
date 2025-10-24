@@ -1,94 +1,153 @@
-import Blog from "../models/Blog.js";
-import JsonWebToken from "jsonwebtoken";
+import Blog from "./../models/Blog.js";
 
-const postBlogs = async(req, res) => {
-    const { title, content, category, image } = req.body;
-    const {authorization} = req.headers;
-    console.log(authorization);
+const postBlogs = async (req, res) => {
+  const { title, category, content } = req.body;
+  const { user } = req;
 
-    let decodedToken;
+  if (!title || !category || !content) {
+    return res.status(400).json({
+      success: false,
+      message: "All fields are required",
+    });
+  }
 
-    try {
-      const decodedToken = JsonWebToken.verify(authorization.split(" ")[1], process.env.JWT_SECRET);
-    } catch (error) {
-      return res.status(401).json({ success: false, message: "Invalid or missing token" });
-      
-    }
-    console.log(decodedToken);
-
-    if (!title || !content || !category) {
-        return res.status(400).json({ success : false, message: "Missing required fields" });
-}
-
-
-
-const newBlog = new Blog({
+  const newBlog = new Blog({
     title,
-    content,
-    author: decodedToken?.id,
     category,
-    image,
-    slug: `temp-slug-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-});
+    content,
+    author: user?.id,
+    slug: `temp-slug-${Date.now()}-${Math.random().toString()}`,
+  });
 
-const savedBlog = await newBlog.save();
-savedBlog.slug = `${title.toLowerCase().replace(/ /g, '-')}-${savedBlog._id}`.replace(/[^\w-]+/g, '');
-await savedBlog.save();
+  const savedBlog = await newBlog.save();
 
-res.status(201).json({ success: true, message : "Blog created successfully", blog: savedBlog });
+  savedBlog.slug = `${title.toLowerCase().replace(/ /g, "-")}-${
+    savedBlog._id
+  }`.replace(/[^\w-]+/g, "");
+
+  await savedBlog.save();
+
+  res.status(201).json({
+    success: true,
+    message: "Blog created successfully",
+    blog: savedBlog,
+  });
 };
 
 const getBlogs = async (req, res) => {
-    const blogs =  await Blog.find().populate('author', '_id name email').sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: blogs, message: "All blogs fetched successfully" }); 
+  const { author } = req.query;
+
+  const conditions = [{ status: "published" }];
+
+  if (author) {
+    conditions.push({ author: author });
+  }
+
+  const blogs = await Blog.find({
+    $or: conditions,
+  })
+    .populate("author", "_id name email")
+    .sort({
+      status: 1,
+      updatedAt: -1,
+    });
+
+  res.status(200).json({
+    success: true,
+    data: blogs,
+    message: "Blogs fetched successfully",
+  });
 };
 
-const getBlogsForSlug = async (req, res) => {
-    const { slug } = req.params;
-    const blog = await Blog.findOne({ slug }).populate('author', '_id name email');
+const getBlogForSlug = async (req, res) => {
+  const { slug } = req.params;
 
-    
+  const blog = await Blog.findOne({ slug: slug }).populate(
+    "author",
+    "_id name email"
+  );
 
+  if (!blog) {
+    return res.status(404).json({
+      success: false,
+      message: "Blog not found",
+    });
+  }
 
-    if (!blog) {
-        return res.status(404).json({ success: false, message: "Blog not found" });
-    }
-    res.status(200).json({ success: true, data: blog, message: "Blog fetched successfully" });
-}
-
-export { postBlogs, getBlogs, getBlogsForSlug };
-
-const getBlogById = async (req, res) => {
-    const { id } = req.params;
-    const blog = await Blog.findById(id).populate('author', '_id name email');
-    if (!blog) {
-        return res.status(404).json({ success: false, message: 'Blog not found' });
-    }
-    res.status(200).json({ success: true, data: blog, message: 'Blog fetched successfully' });
+  res.status(200).json({
+    success: true,
+    data: blog,
+    message: "Blog fetched successfully",
+  });
 };
 
-const updateBlogById = async (req, res) => {
-    const { id } = req.params;
-    const { title, content, category, image, userId } = req.body;
+const patchPublishBlog = async (req, res) => {
+  const { slug } = req.params;
+  const { user } = req;
 
-    const blog = await Blog.findById(id);
-    if (!blog) {
-        return res.status(404).json({ success: false, message: 'Blog not found' });
-    }
+  const blog = await Blog.findOne({ slug: slug });
 
-    // ownership check - ensure the requester is the author
-    if (!userId || blog.author.toString() !== userId) {
-        return res.status(403).json({ success: false, message: 'Forbidden: you are not the author of this blog' });
-    }
+  if (!blog) {
+    return res.status(404).json({
+      success: false,
+      message: "Blog not found",
+    });
+  }
 
-    // update allowed fields
-    if (title) blog.title = title;
-    if (content) blog.content = content;
-    if (category) blog.category = category;
-    if (image !== undefined) blog.image = image;
+  if (blog.author.toString() !== user?.id) {
+    return res.status(403).json({
+      success: false,
+      message: "You are not authorized to publish this blog",
+    });
+  }
 
-    await blog.save();
-    res.status(200).json({ success: true, message: 'Blog updated successfully', data: blog });
+  await Blog.findOneAndUpdate({ slug: slug }, { status: "published" });
+
+  res.status(200).json({
+    success: true,
+    message: "Blog published successfully",
+  });
 };
 
-export { getBlogById, updateBlogById };
+const putBlogs = async (req, res) => {
+  const { slug } = req.params;
+  const { title, category, content } = req.body;
+
+  const { user } = req;
+
+  const existingBlog = await Blog.findOne({ slug: slug });
+
+  if (!existingBlog) {
+    return res.status(404).json({
+      success: false,
+      message: "Blog not found",
+    });
+  }
+
+  if (existingBlog.author.toString() !== user.id) {
+    return res.status(403).json({
+      success: false,
+      message: "You are not authorized to update this blog",
+    });
+  }
+
+  if (!title || !category || !content) {
+    return res.status(400).json({
+      success: false,
+      message: "All fields are required",
+    });
+  }
+
+  const blog = await Blog.findOneAndUpdate(
+    { slug: slug },
+    { title, category, content }
+  );
+
+  return res.status(200).json({
+    success: true,
+    message: "Blog updated successfully",
+    blog: blog,
+  });
+};
+
+export { getBlogForSlug, getBlogs, patchPublishBlog, postBlogs, putBlogs };
