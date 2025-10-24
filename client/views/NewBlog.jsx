@@ -1,289 +1,195 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import MDEditor from '@uiw/react-md-editor';
-import { marked } from 'marked';
-import toast, { Toaster } from 'react-hot-toast';
-import { BLOG_CATEGORIES } from "../src/constants";
-import axios from 'axios';
-import { getCurrentUser } from "../src/util.js";
+import MDEditor from "@uiw/react-md-editor";
+import axios from "axios";
+import { useEffect, useState, useRef } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import Navbar from "../components/Navbar.jsx";
-import Footer from "../components/Footer.jsx";
+import { BLOG_CATEGORIES } from "../src/constants.js";
+import { getCurrentUser } from "../src/util.js";
+import { motion } from "framer-motion";
+import { FiImage, FiX } from 'react-icons/fi';
 
-export default function NewBlogPage() {
-  const [blogData, setBlogData] = useState({
-    title: "",
-    category: "",
-    content: "",
-    image: null,
-  });
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [wordCount, setWordCount] = useState(0);
-  const [charCount, setCharCount] = useState(0);
-  const [lastSaved, setLastSaved] = useState(null);
+function NewBlog() {
+  const [content, setContent] = useState("");
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState(BLOG_CATEGORIES[0]);
   const [user, setUser] = useState(null);
-  
-  // Load draft from localStorage on mount
-  useEffect(() => {
-    const savedDraft = localStorage.getItem('blogDraft');
-    if (savedDraft) {
-      const draft = JSON.parse(savedDraft);
-      setBlogData(draft);
-      toast.success('Draft loaded successfully');
-    }
-  }, []);
-
-  // Auto-save feature
-  useEffect(() => {
-    const autoSaveTimer = setInterval(() => {
-      if (blogData.title || blogData.content) {
-        localStorage.setItem('blogDraft', JSON.stringify(blogData));
-        setLastSaved(new Date());
-        toast.success('Draft auto-saved');
-      }
-    }, 60000); // Auto-save every minute
-
-    return () => clearInterval(autoSaveTimer);
-  }, [blogData]);
-
-  // Update word and character count
-  useEffect(() => {
-    const text = blogData.content;
-    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-    const chars = text.length;
-    setWordCount(words);
-    setCharCount(chars);
-  }, [blogData.content]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setBlogData({ ...blogData, [name]: value });
-  };
-
-  const handleContentChange = (value) => {
-    setBlogData({ ...blogData, content: value || '' });
-  };
-
-  const handleSaveDraft = () => {
-    localStorage.setItem('blogDraft', JSON.stringify(blogData));
-    setLastSaved(new Date());
-    toast.success('Draft saved successfully');
-  };
-
-  const clearDraft = () => {
-    localStorage.removeItem('blogDraft');
-    setBlogData({
-      title: "",
-      category: "",
-      content: "",
-      image: null,
-    });
-    setLastSaved(null);
-    toast.success('Draft cleared');
-  };
-
-  const handleImageChange = (e) => {
-    setBlogData({ ...blogData, image: e.target.files[0] });
-  };
+  const [coverImage, setCoverImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-color-mode', 'light')
+    document.documentElement.setAttribute("data-color-mode", "light");
     setUser(getCurrentUser());
   }, []);
 
-  const handleSubmit = async(e) => {
-    e.preventDefault();
-    const response = await axios.post(`${import.meta.env.VITE_API_URL}/blogs`, {
-      title: blogData.title,
-      category: blogData.category,
-      content: blogData.content,
-      author: user._id,
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast.error("Image size should be less than 5MB");
+        return;
+      }
+      setCoverImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
+  const removeCoverImage = () => {
+    setCoverImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
-   });
-    console.log("New Blog:", blogData);
-    // TODO: Send formData to backend via POST /api/blogs
+  const saveBlog = async () => {
+    if (!title.trim()) {
+      toast.error("Please enter a title");
+      return;
+    }
+    if (!content.trim()) {
+      toast.error("Please add some content");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("content", content);
+      formData.append("category", category);
+      formData.append("author", user?._id);
+      if (coverImage) {
+        formData.append("coverImage", coverImage);
+      }
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/blogs`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response?.data?.success) {
+        toast.success("Blog saved successfully");
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 2000);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Error creating blog");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-  
-  <div className="min-h-screen bg-site py-10 px-5 mt-10 flex justify-center">
-      <Navbar user={user} setUser={setUser} />
-      <Toaster position="top-right" toastOptions={{ duration: 2000 }} />
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="w-full max-w-3xl bg-white/70 backdrop-blur-lg border border-white/30 shadow-xl rounded-2xl p-8"
-      >
-        <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-          ✍️ Write a New <span className="text-brand">Penora</span> Blog
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#19183B] via-[#708993] to-[#A1C2BD]">
+      <Navbar />
+      <div className="container mx-auto p-4 pt-[90px] relative">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-4xl mx-auto bg-[#E7F2EF]/10 backdrop-blur-xl rounded-xl p-8 shadow-[0_8px_32px_0_rgba(25,24,59,0.37)] border border-[#E7F2EF]/20"
+        >
+          <h1 className="text-3xl font-bold text-[#E7F2EF] mb-8 text-center">Create New Blog</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Blog Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Blog Title
-            </label>
-            <input
-              type="text"
-              name="title"
-              placeholder="Enter your blog title"
-              value={blogData.title}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent focus:outline-none focus-ring-brand"
-            />
-          </div>
-
-          {/* Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
-            <select
-              name="category"
-              value={blogData.category}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent focus:outline-none focus-ring-brand"
-            >
-              <option value="">Select Category</option>
-              <option value="Technology">Technology</option>
-              <option value="Lifestyle">Lifestyle</option>
-              <option value="Travel">Travel</option>
-              <option value="Education">Education</option>
-              <option value="Personal">Personal</option>
-              <option value="Health">Health</option>
-              <option value="Finance">Finance</option>
-              <option value="Food">Food</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Sports">Sports</option>
-              <option value="Science">Science</option>
-              <option value="Art">Art</option>
-              <option value="History">History</option>
-              <option value="Politics">Politics</option>
-              <option value="Culture">Culture</option>
-              <option value="Business">Business</option>
-              <option value="Environment">Environment</option>
-              <option value="Fashion">Fashion</option>
-              <option value="Music">Music</option>
-              <option value="Photography">Photography</option>
-              <option value="Writing">Writing</option>
-              <option value="DIY">DIY</option>
-              <option value="Gaming">Gaming</option>
-              <option value="Movies">Movies</option>
-              <option value="Books">Books</option>
-              <option value="Health & Wellness">Health & Wellness</option>
-              <option value="Parenting">Parenting</option>
-              <option value="Relationships">Relationships</option>
-              <option value="Career">Career</option>
-              <option value="Productivity">Productivity</option>
-              <option value="Self-Improvement">Self-Improvement</option>
-              <option value="Travel & Adventure">Travel & Adventure</option>
-              <option value="Technology & Gadgets">Technology & Gadgets</option>
-              <option value="Food & Cooking">Food & Cooking</option>
-              <option value="Sports & Fitness">Sports & Fitness</option>
-              <option value="History & Culture">History & Culture</option>
-              <option value="Entertainment & Pop Culture">Entertainment & Pop Culture</option>
-              <option value="Other">Other</option>
-              
-            </select>
-          </div>
-
-          {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Upload Cover Image
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 
-                         file:rounded-lg file:border-0 file:text-sm file:font-semibold
-                         file:bg-accent file:text-white hover:file:bg-accent-dark"
-            />
-            {blogData.image && (
-              <img
-                src={URL.createObjectURL(blogData.image)}
-                alt="Preview"
-                className="mt-3 w-full h-60 object-cover rounded-lg shadow-md"
-              />
-            )}
-          </div>
-
-          {/* Blog Content */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium text-gray-700">
-                Blog Content
-              </label>
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => setIsPreviewMode(!isPreviewMode)}
-                  className="text-sm link-brand hover:text-accent"
+          {/* Cover Image Upload */}
+          <div className="mb-8">
+            <div className="relative">
+              {imagePreview ? (
+                <div className="relative w-full h-[300px] rounded-lg overflow-hidden group">
+                  <img
+                    src={imagePreview}
+                    alt="Cover preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    onClick={removeCoverImage}
+                    className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <FiX size={20} />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-[300px] border-2 border-dashed border-[#E7F2EF]/30 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#A1C2BD] transition-colors"
                 >
-                  {isPreviewMode ? '✏️ Edit' : '👁️ Preview'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveDraft}
-                  className="text-sm link-brand hover:text-accent"
-                >
-                  💾 Save Draft
-                </button>
-                <button
-                  type="button"
-                  onClick={clearDraft}
-                  className="text-sm text-red-600 hover:text-red-700"
-                >
-                  🗑️ Clear Draft
-                </button>
-              </div>
-            </div>
-
-            {isPreviewMode ? (
-              <div className="prose max-w-none p-4 rounded-lg border border-gray-300 bg-white min-h-[300px]">
-                <div dangerouslySetInnerHTML={{ __html: marked(blogData.content) }} />
-              </div>
-            ) : (
-              <MDEditor
-                value={blogData.content}
-                onChange={handleContentChange}
-                preview="edit"
-                height={300}
-                className="rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent focus:outline-none focus-ring-brand"
-              />
-            )}
-
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <div className="flex gap-4">
-                <span>{wordCount} words</span>
-                <span>{charCount} characters</span>
-              </div>
-              {lastSaved && (
-                <span>Last saved: {new Date(lastSaved).toLocaleTimeString()}</span>
+                  <FiImage size={40} className="text-[#E7F2EF]/70 mb-2" />
+                  <p className="text-[#E7F2EF]/70">Click to upload cover image</p>
+                  <p className="text-[#E7F2EF]/50 text-sm mt-1">Max size: 5MB</p>
+                </div>
               )}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
+              />
             </div>
           </div>
 
-          {/* Submit Button */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="submit"
-            className="w-full btn-brand shadow-md transition-all"
-          >
-            Publish Blog
-          </motion.button>
-        </form>
-      
-      </motion.div>
-     
-  
-  </div>
+          {/* Title Input */}
+          <input
+            type="text"
+            placeholder="Enter your blog title..."
+            className="w-full px-4 py-3 rounded-lg bg-[#19183B]/20 border border-[#E7F2EF]/30 text-[#E7F2EF] placeholder-[#E7F2EF]/50 focus:outline-none focus:ring-2 focus:ring-[#A1C2BD]/50 mb-6"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
 
+          {/* Category Select */}
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg bg-[#19183B]/20 border border-[#E7F2EF]/30 text-[#E7F2EF] focus:outline-none focus:ring-2 focus:ring-[#A1C2BD]/50 mb-6"
+          >
+            {BLOG_CATEGORIES.map((cate) => (
+              <option key={cate} value={cate} className="bg-[#19183B]">
+                {cate}
+              </option>
+            ))}
+          </select>
+
+          {/* Content Editor */}
+          <div className="mb-6">
+            <MDEditor
+              value={content}
+              onChange={setContent}
+              height={500}
+              preview="edit"
+              className="bg-[#19183B]/20 border-[#E7F2EF]/30 rounded-lg overflow-hidden"
+            />
+          </div>
+
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <button
+              className="px-8 py-3 bg-gradient-to-r from-[#19183B]/80 to-[#708993]/80 hover:from-[#19183B] hover:to-[#708993] text-[#E7F2EF] rounded-lg font-semibold backdrop-blur-md border border-[#E7F2EF]/20 focus:outline-none focus:ring-2 focus:ring-[#A1C2BD]/50 transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              type="button"
+              onClick={saveBlog}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Saving..." : "Publish Blog"}
+            </button>
+          </div>
+        </motion.div>
+      </div>
+      <Toaster />
+    </div>
   );
 }
+
+export default NewBlog;
