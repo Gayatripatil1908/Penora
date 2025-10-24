@@ -65,12 +65,12 @@ const Navbar = () => {
           </Link>
 
           <Link 
-            to="/edit/:id" 
+            to="/blogs" 
             className={`text-[#E7F2EF]/90 hover:text-[#E7F2EF] transition-colors duration-300 ${
-              isActive("/new") && "text-[#A1C2BD]"
+              isActive("/blogs") && "text-[#A1C2BD]"
             }`}
           >
-            Edit Blog
+            Read Blogs
           </Link>
           
           <div className="flex items-center space-x-4">
@@ -136,6 +136,14 @@ const Navbar = () => {
                 className="text-[#E7F2EF]/90 hover:text-[#E7F2EF] transition-colors duration-300"
               >
                 Write Blog
+              </Link>
+
+              <Link
+                to="/blogs"
+                onClick={toggleMenu}
+                className="text-[#E7F2EF]/90 hover:text-[#E7F2EF] transition-colors duration-300"
+              >
+                Read Blogs
               </Link>
               
               <div className="flex flex-col space-y-3 w-full px-8">

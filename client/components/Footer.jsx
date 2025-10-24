@@ -86,6 +86,16 @@ const Footer = () => {
                   <span>Write Blog</span>
                 </Link>
               </li>
+
+              <li>
+                <Link 
+                  to="/blogs" 
+                  className="hover:text-[#A1C2BD] transition-colors duration-300 flex items-center space-x-2"
+                >
+                  <span className="w-2 h-2 bg-[#708993] rounded-full" />
+                  <span>Read Blogs</span>
+                </Link>
+              </li>
               
               <li>
                 <Link 
