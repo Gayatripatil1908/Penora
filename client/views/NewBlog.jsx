@@ -6,6 +6,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { BLOG_CATEGORIES } from "../src/constants";
 import axios from 'axios';
 import { getCurrentUser } from "../src/util.js";
+import Navbar from "../components/Navbar.jsx";
+import Footer from "../components/Footer.jsx";
 
 export default function NewBlogPage() {
   const [blogData, setBlogData] = useState({
@@ -104,7 +106,8 @@ export default function NewBlogPage() {
 
   return (
   
-  <div className="min-h-screen bg-site py-10 px-5 flex justify-center">
+  <div className="min-h-screen bg-site py-10 px-5 mt-10 flex justify-center">
+      <Navbar user={user} setUser={setUser} />
       <Toaster position="top-right" toastOptions={{ duration: 2000 }} />
       <motion.div
         initial={{ opacity: 0, y: 40 }}
@@ -276,7 +279,11 @@ export default function NewBlogPage() {
             Publish Blog
           </motion.button>
         </form>
+      
       </motion.div>
-    </div>
+     
+  
+  </div>
+
   );
 }

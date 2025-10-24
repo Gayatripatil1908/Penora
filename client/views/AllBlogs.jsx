@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar.jsx";
+import Footer from "../components/Footer.jsx";
 
 export default function HomePage() {
   const [blogs, setBlogs] = useState([]);
@@ -101,6 +102,7 @@ export default function HomePage() {
           )
         )}
       </div>
+      <Footer />
     </div>
   );
 }
