@@ -1,5 +1,6 @@
 import User from "./../models/User.js";
 import md5 from "md5";
+import jsonwebtoken from "jsonwebtoken";
 
 const postSignup = async(req, res) => {
     const {name, email, password} = req.body;
@@ -40,11 +41,18 @@ const postLogin = async(req, res) => {
     // find user and exclude password from returned fields
     const existingUser = await User.findOne({ email, password: md5(password) }).select("-password");
 
+    if (existingUser) {
+        const token = jsonwebtoken.sign(
+            { userId: existingUser._id, email: existingUser.email, name: existingUser.name },
+            process.env.JWT_SECRET,
+            { expiresIn: "1d" })
+    }
+
     if (!existingUser) {
         return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
-    return res.json({ success: true, message: "User logged in successfully", user: existingUser });
+    return res.json({ success: true, message: "User logged in successfully", user: existingUser, token });
 };
 
 

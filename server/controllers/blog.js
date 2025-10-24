@@ -1,9 +1,22 @@
 import Blog from "../models/Blog.js";
+import JsonWebToken from "jsonwebtoken";
 
 const postBlogs = async(req, res) => {
-    const { title, content, author, category, image } = req.body;
+    const { title, content, category, image } = req.body;
+    const {authorization} = req.headers;
+    console.log(authorization);
 
-    if (!title || !content || !author || !category) {
+    let decodedToken;
+
+    try {
+      const decodedToken = JsonWebToken.verify(authorization.split(" ")[1], process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({ success: false, message: "Invalid or missing token" });
+      
+    }
+    console.log(decodedToken);
+
+    if (!title || !content || !category) {
         return res.status(400).json({ success : false, message: "Missing required fields" });
 }
 
@@ -12,7 +25,7 @@ const postBlogs = async(req, res) => {
 const newBlog = new Blog({
     title,
     content,
-    author,
+    author: decodedToken?.id,
     category,
     image,
     slug: `temp-slug-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
