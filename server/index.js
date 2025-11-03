@@ -39,21 +39,25 @@ app.get("/", (req, res) => {
 
 const jwtCheck = (req, res, next) => {
   req.user = null;
-
   const { authorization } = req.headers;
 
-  if (!authorization) {
-    return res.status(400).json({ message: "Authorization token missing" });
+  if (!authorization || !authorization.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Authorization token missing or invalid format" });
+  }
+
+  const token = authorization.split(" ")[1];
+
+  if (!token || token === "undefined" || token === "null") {
+    return res.status(401).json({ message: "Invalid or missing token" });
   }
 
   try {
-    const token = authorization.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
-
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid JWT Token" });
+    console.error("JWT verification failed:", error.message);
+    return res.status(401).json({ message: "Invalid or expired JWT token" });
   }
 };
 

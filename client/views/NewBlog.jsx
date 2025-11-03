@@ -70,11 +70,16 @@ function NewBlog() {
 
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/blogs`,
-        formData,
+        {
+          title : title,
+          content : content,
+          category : category,
+          author : user?._id
+        },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "multipart/form-data",
+            
           },
         }
       );
