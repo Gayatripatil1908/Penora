@@ -5,8 +5,8 @@ import BlogCard from "../components/BlogCard.jsx";
 import Footer from "../components/Footer.jsx";
 import { motion } from "framer-motion";
 import { FiSearch, FiFilter, FiTrendingUp } from "react-icons/fi";
-import { BLOG_CATEGORIES } from "../src/constants.js";
-import { getCurrentUser } from "../src/util.js";
+import { BLOG_CATEGORIES } from "../constants.js";
+import { getCurrentUser } from "../util.js"
 
 
 function AllBlogs() {

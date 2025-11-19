@@ -3,8 +3,8 @@ import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "../components/Navbar.jsx";
-import { BLOG_CATEGORIES } from "../src/constants.js";
-import { getCurrentUser } from "../src/util.js";
+import { BLOG_CATEGORIES } from "../constants.js";
+import { getCurrentUser } from "../util.js";
 import { motion } from "framer-motion";
 import { FiImage, FiX } from 'react-icons/fi';
 

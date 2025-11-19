@@ -2,13 +2,15 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { BrowserRouter, Routes, Route } from 'react-router'
-import AllBlogs from '../views/AllBlogs.jsx';
-import MyBlogs from '../views/MyBlogs.jsx';
-import NewBlog from '../views/NewBlog.jsx';
-import EditBlog from '../views/EditBlog.jsx';
-import ReadBlog from '../views/ReadBlog.jsx';
-import Login from '../views/Login.jsx';
-import Signup from '../views/Signup.jsx';
+import AllBlogs from './views/AllBlogs.jsx'
+import MyBlogs from './views/MyBlogs.jsx'
+import NewBlog from './views/NewBlog.jsx'
+import EditBlog from './views/EditBlog.jsx'
+import ReadBlog from './views/ReadBlog.jsx'
+import Login from './views/Login.jsx'
+import Signup from './views/Signup.jsx'
+import Navbar from './components/Navbar.jsx'
+
 
 
 
